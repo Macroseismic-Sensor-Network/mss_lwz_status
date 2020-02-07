@@ -1,3 +1,4 @@
+<!--
 /*****************************************************************************
  * LICENSE
  *
@@ -21,26 +22,12 @@
  *
  * Copyright 2019 Stefan Mertl
  *****************************************************************************/
+-->
 
-import Vue from 'vue'
-import store from './store/store.js'
-import VueNativeSock from 'vue-native-websocket'
-import LWZDisplay from './components/LWZDisplay.vue'
+<!-- CSS stylesheet links created by vue.js using webpack  -->
 
-Vue.config.productionTip = false
-
-Vue.use(VueNativeSock,
-        //'ws://mss.mertl-research.at:80/ws_vis/', 
-        'ws://localhost:8100', 
-        {store: store,
-         format: 'json',
-         reconnection: true,
-         reconnectionDelay: 3000});
-
-
-Vue.component('lwz-display', LWZDisplay);
-
-new Vue({
-    store,
-    el: '#app',
-});
+<style type="text/css">
+    <% for (var css in htmlWebpackPlugin.files.css) { %>
+      @import url("{{ site.url }}{{ site.baseurl }}/<%= htmlWebpackPlugin.files.css[css] %>");
+    <% } %>
+</style>
