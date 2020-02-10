@@ -25,20 +25,22 @@
 import Vue from 'vue'
 import store from './store/store.js'
 import VueNativeSock from 'vue-native-websocket'
-import LWZDisplay from './components/LWZDisplay.vue'
+import LWZServerState from './components/LWZServerState.vue'
+import LWZEventState from './components/LWZEventState.vue'
 
 Vue.config.productionTip = false
 
 Vue.use(VueNativeSock,
-        //'ws://mss.mertl-research.at:80/ws_vis/', 
-        'ws://localhost:8100', 
+        'ws://mss.mertl-research.at:80/ws_vis/', 
+        //'ws://localhost:8100', 
         {store: store,
          format: 'json',
          reconnection: true,
          reconnectionDelay: 3000});
 
 
-Vue.component('lwz-display', LWZDisplay);
+Vue.component('lwz-event-state', LWZEventState);
+Vue.component('lwz-server-state', LWZServerState);
 
 new Vue({
     store,

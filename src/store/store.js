@@ -34,7 +34,7 @@ function handle_msg_soh(msg_id, payload, state) {
             state.server_id = payload.server_id
             if (payload.state == 'registered')
             {
-                state.server_state = 'waiting for data';
+                state.server_state = 'online';
             }
             else
             {
@@ -76,29 +76,12 @@ function handle_msg_data(msg_id, payload, state) {
         case 'keydata':
             console.log("Received keydata.");
             state.server_state = 'online';
-            console.log(msg_id)
-            console.log(payload)
-            console.log(state)
+            state.all_stations = payload.all_stations;
+            state.triggered_stations = payload.triggered_stations;
+            state.triggered_event_stations = payload.triggered_event_stations;
             break;
     }
 }
-
-
-/*
-function to_isoformat(date) {
-    Number.prototype.pad = function(size) {
-      var s = String(this);
-      while (s.length < (size || 2)) {s = "0" + s;}
-      return s;
-    }
-
-    // The month is zero-based (January = 0). Add 1 to the month.
-    var isoformat_string  = date.getUTCFullYear() + '-' + (date.getUTCMonth() + 1).pad(2) + '-' + (date.getUTCDate()).pad(2) + 'T' + (date.getUTCHours()).pad(2) + ':' + (date.getUTCMinutes()).pad(2) + ':' + (date.getUTCSeconds()).pad(2) + '.' + (date.getUTCMilliseconds()).pad(6);
-    return isoformat_string;
-}
-*/
-
-
 
 export default new Vuex.Store({
     state: {
@@ -108,8 +91,25 @@ export default new Vuex.Store({
         message: '',
         server_id: '',
         server_state: '',
-        current_range: 60000,
-        display_period: 600000,
+        keydata_time: '',
+        all_stations: {},
+        triggered_stations: {},
+        triggered_event_stations: {},
+        colors: {
+            state_green: "#28D761",
+            state_red: "#fd0000",
+            event_green: "#28D761",
+            event_yellow: "#ffff00",
+            event_orange: "#fec400",
+            event_red: "#fd0000",
+            gray: "#838383",
+            white: "#ffffff",
+        },
+        thr_values: {
+            yellow: 0.1e-3,
+            orange: 1e-3,
+            red: 5e-3,
+        },
     },
 
     getters: {
@@ -117,8 +117,32 @@ export default new Vuex.Store({
             return state.server_state;
         },
 
+        colors: state => {
+            return state.colors;
+        },
+
         station_meta: (state) => {
             return state.station_meta;
+        },
+
+        triggered_event_stations: state => {
+            return state.triggered_event_stations;
+            //return {'eins': state.thr_values.yellow, 'zwei': 0.1e-3, 'drei': 5e-3,};
+        },
+
+        thr_values: state => {
+            return state.thr_values;
+        },
+
+        colormap: state => {
+            return state.colormap;
+        },
+
+        scales: (state) => {
+            const color = d3.scaleLog().domain(state.pgv_limits)
+                                       .range([1, 0])
+                                       .clamp(true);
+            return {color};
         },
     },
 
@@ -128,8 +152,6 @@ export default new Vuex.Store({
             state.connected = true;
             state.server_state = 'connection opened'
             console.info("Connected to websocket server.");
-            //console.info("state: ", state);
-            //console.info("event: ", event);
             var msg = {'class': 'control',
                    'id': 'mode',
                    'payload': 'keydata'};
@@ -188,7 +210,6 @@ export default new Vuex.Store({
                 }
                 state.station_meta = data;
                 console.log("Store :: Station metadata loaded.");
-                //self.plot_stations();
             });
         },
     },
